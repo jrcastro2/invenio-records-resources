@@ -104,6 +104,7 @@ class and implementing the desired methods:
 
 from functools import wraps
 
+from flask import current_app
 from invenio_db import db
 
 from ..tasks import send_change_notifications
@@ -147,12 +148,29 @@ class RecordCommitOp(Operation):
 
     def on_register(self, uow):
         """Commit record (will flush to the database)."""
+        current_app.logger.debug(
+            "---------------- Inside RecordCommitOp on_register function. ----------------------"
+        )
         self._record.commit()
+        current_app.logger.debug(
+            "---------------- After commit self._record value:{0}".format(self._record)
+        )
 
     def on_commit(self, uow):
         """Run the operation."""
+        current_app.logger.debug(
+            "Inside RecordCommitOp/RecordIndexOp on_commit function for _record: {0}".format(
+                self._record
+            )
+        )
+        current_app.logger.debug(
+            "------------ self._indexer value {0}: ".format(self._indexer)
+        )
         if self._indexer is not None:
             arguments = {"refresh": True} if self._index_refresh else {}
+            current_app.logger.debug(
+                "------------ self._record value to be indexed {0}: ".format(self._record)
+            )
             self._indexer.index(self._record, arguments=arguments)
 
 
